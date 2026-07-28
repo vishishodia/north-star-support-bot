@@ -85,7 +85,3 @@ Try these inputs to see the different flows:
 | `recommend something` | Guided flow: activity → weather → budget → recommendation |
 | `talk to a human` | Simulated live agent handoff |
 | `asdkfjasdf` | Fallback: "I didn't understand" with options |
-
-## Notes
-
-This project was built as part of the Upwork Talent Accelerator program. It uses only the mock data and business rules specified in the project contract — no live order/payment systems are connected.
