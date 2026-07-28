@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>North Star Support Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#101B33;
+    --navy-card:#182746;
+    --navy-line:#25396B;
+    --star-gold:#F2B441;
+    --star-gold-dim:#C9932E;
+    --text-main:#F1F1E8;
+    --text-muted:#8FA0C2;
+    --bot-bubble:#1F3158;
+    --user-bubble:#F2B441;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--navy-deep);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(242,180,65,0.06) 0, transparent 40%),
+      repeating-radial-gradient(circle at 50% 100%, transparent 0, transparent 60px, rgba(255,255,255,0.015) 61px);
+    font-family:'Inter', sans-serif;
+    color:var(--text-main);
+    padding:24px;
+  }
+  .app{
+    width:100%;
+    max-width:420px;
+    background:var(--navy-card);
+    border:1px solid var(--navy-line);
+    border-radius:16px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    height:640px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  }
+  header{
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border-bottom:1px solid var(--navy-line);
+    background:linear-gradient(180deg, rgba(242,180,65,0.05), transparent);
+  }
+  .star-icon{
+    width:34px;height:34px;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    background:var(--navy-deep);
+    border:1px solid var(--star-gold-dim);
+    color:var(--star-gold);
+    font-size:16px;
+  }
+  header h1{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:18px;
+    letter-spacing:0.3px;
+    margin:0;
+  }
+  header p{
+    margin:0;
+    font-size:11px;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-family:'Barlow Condensed', sans-serif;
+  }
+  .status-dot{
+    margin-left:auto;
+    display:flex;align-items:center;gap:6px;
+    font-size:11px;color:var(--text-muted);
+    font-family:'Barlow Condensed', sans-serif;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  .status-dot span{
+    width:7px;height:7px;border-radius:50%;
+    background:#5FCB8F;
+    display:inline-block;
+  }
+  #chat{
+    flex:1;
+    overflow-y:auto;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .msg{
+    max-width:82%;
+    padding:10px 13px;
+    border-radius:14px;
+    font-size:14px;
+    line-height:1.45;
+    white-space:pre-wrap;
+  }
+  .bot{
+    align-self:flex-start;
+    background:var(--bot-bubble);
+    border:1px solid var(--navy-line);
+    border-bottom-left-radius:4px;
+  }
+  .user{
+    align-self:flex-end;
+    background:var(--user-bubble);
+    color:#25190A;
+    font-weight:500;
+    border-bottom-right-radius:4px;
+  }
+  .agent{
+    align-self:flex-start;
+    background:transparent;
+    border:1px dashed var(--star-gold-dim);
+    color:var(--star-gold);
+    border-radius:14px;
+    font-size:12px;
+    text-align:center;
+    max-width:100%;
+    font-family:'Barlow Condensed', sans-serif;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    padding:6px 12px;
+    align-self:center;
+  }
+  .quick-replies{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:0 18px 14px;
+  }
+  .qr-btn{
+    background:transparent;
+    border:1px solid var(--navy-line);
+    color:var(--text-main);
+    font-size:12.5px;
+    padding:7px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    font-family:'Inter', sans-serif;
+    transition:border-color 0.15s, color 0.15s;
+  }
+  .qr-btn:hover{
+    border-color:var(--star-gold);
+    color:var(--star-gold);
+  }
+  form#inputRow{
+    display:flex;
+    gap:8px;
+    padding:14px 16px;
+    border-top:1px solid var(--navy-line);
+    background:var(--navy-deep);
+  }
+  #textInput{
+    flex:1;
+    background:var(--navy-card);
+    border:1px solid var(--navy-line);
+    border-radius:10px;
+    padding:10px 12px;
+    color:var(--text-main);
+    font-size:14px;
+    font-family:'Inter', sans-serif;
+    outline:none;
+  }
+  #textInput:focus{
+    border-color:var(--star-gold-dim);
+  }
+  #sendBtn{
+    background:var(--star-gold);
+    color:#25190A;
+    border:none;
+    border-radius:10px;
+    padding:0 16px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    font-family:'Barlow Condensed', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  #sendBtn:hover{background:var(--star-gold-dim);}
+  #chat::-webkit-scrollbar{width:6px;}
+  #chat::-webkit-scrollbar-thumb{background:var(--navy-line); border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="star-icon">&#9733;</div>
+    <div>
+      <h1>North Star Support</h1>
+      <p>Outdoor & Camping Gear Co.</p>
+    </div>
+    <div class="status-dot"><span></span>Online</div>
+  </header>
+
+  <div id="chat"></div>
+  <div class="quick-replies" id="quickReplies"></div>
+
+  <form id="inputRow">
+    <input type="text" id="textInput" placeholder="Type a message..." autocomplete="off">
+    <button type="submit" id="sendBtn">Send</button>
+  </form>
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000/api/v1";
+
+const chat = document.getElementById("chat");
+const quickRepliesBar = document.getElementById("quickReplies");
+const form = document.getElementById("inputRow");
+const textInput = document.getElementById("textInput");
+const sendBtn = document.getElementById("sendBtn");
+
+let sessionId = null;
+
+function scrollBottom() {
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function addMessage(text, sender = "bot") {
+
+    const div = document.createElement("div");
+
+    div.className = `msg ${sender}`;
+
+    div.textContent = text;
+
+    chat.appendChild(div);
+
+    scrollBottom();
+}
+
+function addTyping() {
+
+    const div = document.createElement("div");
+
+    div.className = "msg bot";
+
+    div.id = "typing";
+
+    div.textContent = "Typing...";
+
+    chat.appendChild(div);
+
+    scrollBottom();
+}
+
+function removeTyping() {
+
+    const typing = document.getElementById("typing");
+
+    if (typing) typing.remove();
+
+}
+
+function clearQuickReplies() {
+
+    quickRepliesBar.innerHTML = "";
+
+}
+
+function renderQuickReplies(replies = []) {
+
+    clearQuickReplies();
+
+    replies.forEach(reply => {
+
+        const btn = document.createElement("button");
+
+        btn.className = "qr-btn";
+
+        btn.textContent = reply;
+
+        btn.onclick = () => {
+
+            sendMessage(reply);
+
+        };
+
+        quickRepliesBar.appendChild(btn);
+
+    });
+
+}
+
+async function createSession() {
+
+    const response = await fetch(`${API_BASE}/reset`, {
+
+        method: "POST"
+
+    });
+
+    const data = await response.json();
+
+    sessionId = data.session_id;
+
+}
+
+async function sendMessage(message) {
+
+    if (!message.trim()) return;
+
+    if (!sessionId) {
+
+        await createSession();
+
+    }
+
+    addMessage(message, "user");
+
+    textInput.value = "";
+
+    clearQuickReplies();
+
+    sendBtn.disabled = true;
+
+    textInput.disabled = true;
+
+    addTyping();
+
+    try {
+
+        const response = await fetch(`${API_BASE}/chat`, {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify({
+
+                session_id: sessionId,
+
+                message: message
+
+            })
+
+        });
+
+        removeTyping();
+
+        if (!response.ok) {
+
+            throw new Error("Server Error");
+
+        }
+
+        const data = await response.json();
+
+        addMessage(data.reply, "bot");
+
+        renderQuickReplies(data.quick_replies || []);
+
+        chat.scrollTo({
+            top: chat.scrollHeight,
+            behavior: "smooth"
+        });
+
+    } catch (err) {
+
+        removeTyping();
+
+        addMessage(
+            "⚠️ Unable to connect to the backend.",
+            "bot"
+        );
+
+        console.error(err);
+
+    }
+
+    sendBtn.disabled = false;
+
+    textInput.disabled = false;
+
+    textInput.focus();
+
+}
+form.addEventListener("submit", async function (e) {
+
+    e.preventDefault();
+
+    const message = textInput.value.trim();
+
+    if (!message) return;
+
+    await sendMessage(message);
+
+});
+
+textInput.addEventListener("keydown", async function (e) {
+
+    if (e.key === "Enter") {
+
+        e.preventDefault();
+
+        const message = textInput.value.trim();
+
+        if (!message) return;
+
+        await sendMessage(message);
+
+    }
+
+});
+
+async function initialize() {
+
+    try {
+
+        await createSession();
+
+        addMessage(
+`👋 Welcome to North Star Support!
+
+I'm your virtual assistant.
+
+I can help you with:
+
+📦 Order Tracking
+↩️ Returns & Exchanges
+🚚 Shipping Information
+🎒 Product Recommendations
+👨‍💼 Live Agent Support
+
+How can I help you today?`,
+            "bot"
+        );
+
+        renderQuickReplies([
+            "Track Order",
+            "Returns",
+            "Shipping",
+            "Recommendations",
+            "Live Agent"
+        ]);
+
+    } catch (err) {
+
+        addMessage(
+            "Unable to connect to the backend.\n\nPlease make sure the FastAPI server is running.",
+            "bot"
+        );
+
+        console.error(err);
+
+    }
+
+}
+
+initialize();
+
+</script>
+
+</body>
+</html>
