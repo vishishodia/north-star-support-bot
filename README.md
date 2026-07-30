@@ -8,10 +8,10 @@ A customer support chatbot for an outdoor apparel and camping gear e-commerce br
 - ↩️ **Returns & Exchanges** – 30-day return policy with exchange support
 - 🚚 **Shipping Information** – Standard and expedited shipping options
 - 🎒 **Smart Product Recommendations** – Personalized recommendations based on activity, weather, and budget
-- 💬 **Natural Language Understanding** – Understands conversational inputs such as:
-  - "I'm going trekking" → Hiking
-  - "It will snow" → Cold weather
-  - "Need something cheap" → Under $100
+- 💬 **Natural Language Understanding** – Three-layer intent detection:
+  - **Keyword matching** for clear, direct phrasing ("track my order")
+  - **Typo tolerance** (RapidFuzz) for misspellings ("shiping", "retrun", "recomend")
+  - **Semantic matching** (Sentence Transformers) for paraphrased/novel input ("has my package arrived", "help me choose some gear")
 - 👨‍💼 **Human Agent Handoff** – Simulated live agent mode that remains active until the user selects **Main Menu**
 - 🔄 **Conversation State Management** – Maintains context across multi-step conversations
 - ❓ **Fallback Handling** – Friendly responses for unsupported queries with quick-reply suggestions
@@ -25,23 +25,32 @@ A customer support chatbot for an outdoor apparel and camping gear e-commerce br
 
 ## Project Structure
 
-\```
+The backend is organized as a request → route → conversation logic → NLP pipeline:
+
+```
 north-star-support-bot/
 ├── backend/
 │   └── app/
-│       ├── chatbot.py          # Core conversation logic
-│       ├── data.py             # Mock orders, return policy, shipping info
-│       ├── intents.py          # Intent detection (keyword + fuzzy)
-│       ├── semantic_search.py  # Embedding-based intent matching
+│       ├── main.py             # FastAPI app entrypoint
+│       ├── routes.py           # API endpoints (/chat, /reset, /health)
+│       │
+│       ├── chatbot.py          # Core conversation state machine
+│       ├── session.py          # In-memory session/state management
+│       │
+│       ├── intents.py          # Intent detection: keyword + typo-tolerant (fuzzy) matching
+│       ├── semantic_search.py  # Intent detection: embedding-based semantic matching
+│       │
 │       ├── models.py           # Pydantic request/response models
-│       ├── routes.py           # API endpoints
-│       ├── session.py          # Conversation state management
-│       └── main.py             # FastAPI app entrypoint
-├── frontend/                   # Chat UI
-├── requirements.txt
+│       ├── data.py             # Mock orders, return policy, shipping info, recommendations
+│       └── utils.py            # Text normalization helpers
+│
+├── frontend/
+│   └── index.html              # Chat UI (single-file HTML/CSS/JS)
+│
+├── requirements.txt            # Python dependencies
 ├── .gitignore
 └── README.md
-\```
+```
 
 ## Getting Started
 
@@ -50,7 +59,7 @@ north-star-support-bot/
 
 ### Installation
 
-\```bash
+```bash
 git clone https://github.com/vishishodia/north-star-support-bot.git
 cd north-star-support-bot
 
@@ -58,16 +67,18 @@ python -m venv venv
 source venv/bin/activate      # On Windows: venv\Scripts\activate
 
 pip install -r requirements.txt
-\```
+```
 
 ### Run the backend
 
-\```bash
+```bash
 cd backend
 uvicorn app.main:app --reload
-\```
+```
 
 The API will be available at `http://localhost:8000`.
+
+> **Note:** The first run downloads the `all-MiniLM-L6-v2` embedding model from Hugging Face, so an internet connection is required at least once. Subsequent runs use the local cache.
 
 ### Run the frontend
 
@@ -96,13 +107,25 @@ Try these inputs to see the different flows:
 | Main Menu                              | Returns to chatbot       |
 | I like pizza                           | Fallback response        |
 
+### Typo tolerance
 
-## Recent Improvements
+The bot understands common misspellings without needing exact keywords:
 
-Based on reviewer feedback, the chatbot now includes:
+| User Input            | Expected Result      |
+| ---------------------- | --------------------- |
+| shiping info please     | Shipping options       |
+| retrun policy           | Return policy          |
+| recomend something      | Recommendation flow    |
+| hllo there              | Greeting                |
 
-- Enhanced natural language understanding for activities, weather, and budgets
-- Complete recommendation coverage for all activity × weather × budget combinations
-- Persistent live agent mode until the user explicitly returns to the Main Menu
-- Improved conversation flow while tracking orders
-- Better quick-reply support throughout the chatbot
+### Semantic understanding
+
+Paraphrased requests with no matching keyword are still routed correctly:
+
+| User Input                  | Expected Result     |
+| ----------------------------- | --------------------- |
+| has my package arrived yet     | Order Tracking          |
+| help me choose some gear       | Recommendation flow     |
+| talk to a real person          | Human handoff            |
+| what's your return window      | Return policy             |
+
