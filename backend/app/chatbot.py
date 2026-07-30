@@ -1,5 +1,5 @@
 from app.models import ChatResponse, ConversationState
-from app.intents import detect_intent, Intent
+from app.intents import detect_intent, normalize_activity, normalize_weather, normalize_budget, Intent
 from app.data import ORDERS, RETURN_POLICY, SHIPPING_INFO, RECOMMENDATIONS
 
 
@@ -7,16 +7,63 @@ class ChatBot:
 
     def process_message(self, session, message):
 
+        # Stay in Live Agent mode until the user requests the Main Menu.
+        if session["state"] == ConversationState.LIVE_AGENT:
+
+            if message.lower().strip() in [
+                "main menu",
+                "menu",
+                "back",
+                "return",
+                "chatbot"
+            ]:
+
+                session["state"] = ConversationState.MAIN_MENU
+
+                return ChatResponse(
+                    reply=(
+                        "Welcome back! 😊\n\n"
+                        "You're now chatting with the North Star Support Bot."
+                    ),
+                    state=ConversationState.MAIN_MENU,
+                    quick_replies=[
+                        "Track Order",
+                        "Returns",
+                        "Shipping",
+                        "Recommendations",
+                        "Live Agent"
+                    ]
+                )
+
+            return ChatResponse(
+                reply=(
+                    "👨‍💼 Live Agent:\n\n"
+                    "Thanks for your message. A support representative is assisting you.\n\n"
+                    "Type 'Main Menu' whenever you'd like to return to the chatbot."
+                ),
+                state=ConversationState.LIVE_AGENT,
+                quick_replies=[
+                    "Main Menu"
+                ]
+            )
+
         # If we're waiting for an order number,
         # allow the user to switch topics.
         if session["state"] == ConversationState.AWAITING_ORDER:
 
             message = message.strip()
 
-            # If the user asks about something else, leave order tracking
             intent = detect_intent(message)
 
-            if intent != Intent.UNKNOWN and intent != Intent.ORDER_TRACKING:
+            # User wants to start order tracking again
+            if intent == Intent.ORDER_TRACKING:
+                return ChatResponse(
+                    reply="Sure! Please enter your order number (111, 222, or 333).",
+                    state=ConversationState.AWAITING_ORDER
+                )
+
+            # User switched to another feature
+            if intent != Intent.UNKNOWN:
                 session["state"] = ConversationState.MAIN_MENU
                 return self.process_message(session, message)
 
@@ -36,7 +83,8 @@ class ChatBot:
                         "Track Another Order",
                         "Returns",
                         "Shipping",
-                        "Recommendations"
+                        "Recommendations",
+                        "Live Agent"
                     ]
                 )
 
@@ -52,9 +100,9 @@ class ChatBot:
         # Recommendation - Activity
         if session["state"] == ConversationState.RECOMMENDATION_ACTIVITY:
 
-            activity = message.strip().title()
+            activity = normalize_activity(message)
 
-            if activity not in ["Hiking", "Camping", "Running"]:
+            if activity is None:
                 return ChatResponse(
                     reply="Please choose one of the available activities.",
                     state=ConversationState.RECOMMENDATION_ACTIVITY,
@@ -82,9 +130,9 @@ class ChatBot:
         # Recommendation - Weather
         if session["state"] == ConversationState.RECOMMENDATION_WEATHER:
 
-            weather = message.strip().title()
+            weather = normalize_weather(message)
 
-            if weather not in ["Cold", "Mild", "Rainy"]:
+            if weather is None:
                 return ChatResponse(
                     reply="Please choose Cold, Mild, or Rainy.",
                     state=ConversationState.RECOMMENDATION_WEATHER,
@@ -111,9 +159,9 @@ class ChatBot:
         # Recommendation - Budget
         if session["state"] == ConversationState.RECOMMENDATION_BUDGET:
 
-            budget = message.strip()
+            budget = normalize_budget(message)
 
-            if budget not in ["Under $100", "$100-$250"]:
+            if budget is None:
                 return ChatResponse(
                     reply="Please choose one of the available budget ranges.",
                     state=ConversationState.RECOMMENDATION_BUDGET,
@@ -125,14 +173,13 @@ class ChatBot:
 
             session["budget"] = budget
 
-            products = RECOMMENDATIONS.get(
-                (
-                    session["activity"],
-                    session["weather"],
-                    session["budget"],
-                ),
-                [],
+            key = (
+                session["activity"],
+                session["weather"],
+                session["budget"],
             )
+
+            products = RECOMMENDATIONS.get(key)
 
             session["state"] = ConversationState.MAIN_MENU
 
@@ -156,7 +203,9 @@ class ChatBot:
                 quick_replies=[
                     "Track Order",
                     "Returns",
-                    "Recommendations"
+                    "Shipping",
+                    "Recommendations",
+                    "Live Agent"
                 ]
             )
         
@@ -202,7 +251,13 @@ class ChatBot:
         elif intent == Intent.SHIPPING:
             return ChatResponse(
                 reply=SHIPPING_INFO,
-                state=ConversationState.MAIN_MENU
+                state=ConversationState.MAIN_MENU,
+                quick_replies=[
+                    "Track Order",
+                    "Returns",
+                    "Recommendations",
+                    "Live Agent"
+                ]
             )
 
         elif intent == Intent.RECOMMENDATION:
@@ -223,13 +278,19 @@ class ChatBot:
             )
 
         elif intent == Intent.LIVE_AGENT:
+
+            session["state"] = ConversationState.LIVE_AGENT
+
             return ChatResponse(
                 reply=(
-                    "Connecting you with a live agent...\n\n"
-                    "This is a simulated handoff. "
-                    "You can continue chatting with me anytime."
+                    "👨‍💼 Connecting you with a live agent...\n\n"
+                    "You are now chatting with a simulated support representative.\n\n"
+                    "Type 'Main Menu' at any time to return to the chatbot."
                 ),
-                state=ConversationState.LIVE_AGENT
+                state=ConversationState.LIVE_AGENT,
+                quick_replies=[
+                    "Main Menu"
+                ]
             )
 
         return ChatResponse(
