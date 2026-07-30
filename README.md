@@ -4,13 +4,17 @@ A customer support chatbot for an outdoor apparel and camping gear e-commerce br
 
 ## Features
 
-- **Order Tracking** — Look up order status by order number (mock data)
-- **Returns & Exchanges** — 30-day return policy, unused items, original packaging required
-- **Shipping Info** — Standard (3–5 business days) and expedited (1–2 business days) options
-- **Product Recommendations** — Guided flow based on activity, weather, and budget
-- **Human Handoff** — Simulated live agent transition with fallback to main menu
-- **Fallback Handling** — Clear "I didn't understand" response with next-step options
-- **Natural language understanding** — Handles phrasing variations (e.g. "where's my package" vs "track my order") using semantic similarity, not just keyword matching
+- 📦 **Order Tracking** – Track orders using mock order numbers (111, 222, 333)
+- ↩️ **Returns & Exchanges** – 30-day return policy with exchange support
+- 🚚 **Shipping Information** – Standard and expedited shipping options
+- 🎒 **Smart Product Recommendations** – Personalized recommendations based on activity, weather, and budget
+- 💬 **Natural Language Understanding** – Understands conversational inputs such as:
+  - "I'm going trekking" → Hiking
+  - "It will snow" → Cold weather
+  - "Need something cheap" → Under $100
+- 👨‍💼 **Human Agent Handoff** – Simulated live agent mode that remains active until the user selects **Main Menu**
+- 🔄 **Conversation State Management** – Maintains context across multi-step conversations
+- ❓ **Fallback Handling** – Friendly responses for unsupported queries with quick-reply suggestions
 
 ## Tech Stack
 
@@ -73,15 +77,32 @@ Open `frontend/index.html` in your browser (or serve it with a simple static ser
 
 Try these inputs to see the different flows:
 
-| Input | Expected Behavior |
-|---|---|
-| `hi` | Greeting + main menu options |
-| `track my order` → `111` | Order #111: Shipped, arriving tomorrow |
-| `track my order` → `222` | Order #222: Processing, ships in 24 hours |
-| `track my order` → `333` | Order #333: Delivered |
-| `track my order` → `999` | Invalid order message |
-| `returns` | Return policy (30-day, unused, original packaging) |
-| `shipping` | Standard vs expedited shipping info |
-| `recommend something` | Guided flow: activity → weather → budget → recommendation |
-| `talk to a human` | Simulated live agent handoff |
-| `asdkfjasdf` | Fallback: "I didn't understand" with options |
+| User Input                             | Expected Result          |
+| -------------------------------------- | ------------------------ |
+| hello                                  | Greeting                 |
+| track my order                         | Prompts for order number |
+| 111                                    | Shipped                  |
+| 222                                    | Processing               |
+| 333                                    | Delivered                |
+| 999                                    | Invalid order            |
+| returns                                | Return policy            |
+| shipping                               | Shipping options         |
+| recommendations                        | Recommendation flow      |
+| I'm going trekking                     | Hiking                   |
+| It will snow                           | Cold                     |
+| Need something cheap                   | Under $100               |
+| Camping → Pleasant → Under 250 dollars | Camping recommendations  |
+| live agent                             | Human handoff            |
+| Main Menu                              | Returns to chatbot       |
+| I like pizza                           | Fallback response        |
+
+
+## Recent Improvements
+
+Based on reviewer feedback, the chatbot now includes:
+
+- Enhanced natural language understanding for activities, weather, and budgets
+- Complete recommendation coverage for all activity × weather × budget combinations
+- Persistent live agent mode until the user explicitly returns to the Main Menu
+- Improved conversation flow while tracking orders
+- Better quick-reply support throughout the chatbot
