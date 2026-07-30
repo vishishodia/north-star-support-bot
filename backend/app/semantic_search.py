@@ -76,7 +76,7 @@ def semantic_intent(message: str):
 
     best_index = scores.argmax()
 
-    if scores[best_index] < 0.55:
+    if scores[best_index] < 0.50:
         return Intent.UNKNOWN
 
     return example_intents[best_index]
