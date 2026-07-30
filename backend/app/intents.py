@@ -157,7 +157,7 @@ def normalize_weather(message: str):
         return "Rainy"
 
     if any(word in message for word in [
-        "mild", "warm", "pleasant", "nice",
+        "mild", "warm", "hot", "pleasant", "nice",
         "sunny", "clear", "comfortable",
         "cool", "spring", "autumn", "fall"
     ]):
