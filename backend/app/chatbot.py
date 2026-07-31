@@ -48,10 +48,37 @@ class ChatBot:
             )
 
         # If we're waiting for an order number,
-        # allow the user to switch topics.
+        # allow the user to switch topics or exit back to the main menu.
         if session["state"] == ConversationState.AWAITING_ORDER:
 
             message = message.strip()
+
+            # Explicit exit phrases, so the user is never stuck needing
+            # a valid order number just to leave this flow.
+            if message.lower() in [
+                "main menu",
+                "menu",
+                "back",
+                "return",
+                "cancel",
+                "exit"
+            ]:
+                session["state"] = ConversationState.MAIN_MENU
+
+                return ChatResponse(
+                    reply=(
+                        "No problem! 😊\n\n"
+                        "You're back at the North Star Support Bot main menu."
+                    ),
+                    state=ConversationState.MAIN_MENU,
+                    quick_replies=[
+                        "Track Order",
+                        "Returns",
+                        "Shipping",
+                        "Recommendations",
+                        "Live Agent"
+                    ]
+                )
 
             intent = detect_intent(message)
 
@@ -59,7 +86,10 @@ class ChatBot:
             if intent == Intent.ORDER_TRACKING:
                 return ChatResponse(
                     reply="Sure! Please enter your order number (111, 222, or 333).",
-                    state=ConversationState.AWAITING_ORDER
+                    state=ConversationState.AWAITING_ORDER,
+                    quick_replies=[
+                        "Main Menu"
+                    ]
                 )
 
             # User switched to another feature
@@ -92,9 +122,13 @@ class ChatBot:
                 reply=(
                     "❌ Sorry, I couldn't find that order number.\n\n"
                     "Please enter a valid order number (111, 222, or 333), "
-                    "or ask me about Returns, Shipping, or Recommendations."
+                    "ask me about Returns, Shipping, or Recommendations, "
+                    "or type 'Main Menu' to go back."
                 ),
-                state=ConversationState.AWAITING_ORDER
+                state=ConversationState.AWAITING_ORDER,
+                quick_replies=[
+                    "Main Menu"
+                ]
             )
 
         # Recommendation - Activity
